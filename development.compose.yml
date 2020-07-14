@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: rabbitmq
+        tty: true
+        volumes:
+            - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+            - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/mnesia/
+            - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+        environment:
+            RABBITMQ_ERLANG_COOKIE: '${RABBITMQ_ERLANG_COOKIE}'
+            RABBITMQ_DEFAULT_USER: '${RABBITMQ_DEFAULT_USER}'
+            RABBITMQ_DEFAULT_PASS: '${RABBITMQ_DEFAULT_PASS}'
+            RABBITMQ_DEFAULT_VHOST: '${RABBITMQ_DEFAULT_VHOST}'
+        ports:
+            - 5672:5672
+            - 15672:15672
+    gateway:
+        build:
+            context: ./api-gateway
+            target: development
+        container_name: gateway
+        volumes:
+            - ./api-gateway:/usr/src/app
+            - /usr/src/app/node_modules
+        ports:
+            - ${GATEWAY_PORT}:${GATEWAY_PORT}
+            - ${GATEWAY_DEBUG_PORT}:${DEBUG_PORT}
+        env_file:
+            - ./.env
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'npm', 'run', 'start:debug']
+    logger:
+        build:
+            context: ./logger-service
+            target: development
+        container_name: logger
+        volumes:
+            - ./logger-service:/usr/src/app
+            - /usr/src/app/node_modules
+        env_file:
+            - ./.env
+        ports:
+            - ${LOGGER_DEBUG_PORT}:${DEBUG_PORT}
+        restart: on-failure
+        depends_on:
+            - rabbitmq
+        links:
+            - rabbitmq
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'npm', 'run', 'start:debug']

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: rabbitmq
+        tty: true
+        environment:
+            RABBITMQ_ERLANG_COOKIE: '${RABBITMQ_ERLANG_COOKIE}'
+            RABBITMQ_DEFAULT_USER: '${RABBITMQ_DEFAULT_USER}'
+            RABBITMQ_DEFAULT_PASS: '${RABBITMQ_DEFAULT_PASS}'
+            RABBITMQ_DEFAULT_VHOST: '${RABBITMQ_DEFAULT_VHOST}'
+        ports:
+            - 5672:5672
+            - 15672:15672
+        restart: always
+    gateway:
+        build:
+            context: ./api-gateway
+            target: production
+        container_name: gateway
+        ports:
+            - ${GATEWAY_PORT}:${GATEWAY_PORT}
+        env_file:
+            - ./.env
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        restart: always
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'node', 'dist/main.js']
+    logger:
+        build:
+            context: ./logger-service
+            target: production
+        container_name: logger
+        env_file:
+            - ./.env
+        restart: always
+        depends_on:
+            - rabbitmq
+        links:
+            - rabbitmq
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'node', 'dist/main.js']
