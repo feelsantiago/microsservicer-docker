@@ -15,7 +15,7 @@ The docker compose only loads a file called `.env` to fill up the variables on `
 Change the `production.env` file to `.env`, than run:
 
 ```bash
-$ docker-compose up --build -V -d
+$ docker-compose build
 $ docker-compose up
 ```
 
@@ -24,6 +24,6 @@ $ docker-compose up
 Change the `development.env` file to `.env`, than run:
 
 ```bash
-$ docker-compose -f development.compose.yml  up --build -V -d
+$ docker-compose -f development.compose.yml build
 $ docker-compose -f development.compose.yml up
 ```

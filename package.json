@@ -1,0 +1,22 @@
+{
+    "name": "microservice-logger",
+    "version": "1.0.0",
+    "description": "Microsservices with docker",
+    "scripts": {
+        "build": "docker-compose build",
+        "build:dev": "docker-compose -f development.compose.yml build",
+        "start": "docker-compose up",
+        "start:dev": "docker-compose -f development.compose.yml up"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/feelsantiago/microsservicer-docker.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/feelsantiago/microsservicer-docker/issues"
+    },
+    "homepage": "https://github.com/feelsantiago/microsservicer-docker#readme"
+}

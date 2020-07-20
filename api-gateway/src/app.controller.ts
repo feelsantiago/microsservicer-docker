@@ -1,18 +1,18 @@
-import { Controller, Get, Inject } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Controller, Get } from '@nestjs/common';
+import { LoggerInstance } from 'feel-logger';
+import { LoggerProvider } from './logger/logger.provider';
 
 @Controller()
 export class AppController {
-    constructor(@Inject('LOGGER_SERVICE') private client: ClientProxy) {}
+    private readonly logger: LoggerInstance<AppController>;
+
+    constructor(loggerProvider: LoggerProvider) {
+        this.logger = loggerProvider.createLoggerInstance(AppController);
+    }
 
     @Get()
-    public log(): Observable<string> {
-        return this.client.emit('log', 'Logger message from gateway').pipe(
-            map((result) => {
-                return 'Log send';
-            }),
-        );
+    public log(): string {
+        this.logger.info('Incoming Request', { user: 'filipe', email: 'test@email.com' }, 'detalhes', { a: 1 });
+        return 'received';
     }
 }
